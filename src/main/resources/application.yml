@@ -1,0 +1,77 @@
+server:
+  port: 8080
+  shutdown: graceful
+
+spring:
+  application:
+    name: ai-gateway
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+  threads:
+    virtual:
+      enabled: true
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/ai_gateway}
+      auto-index-creation: true
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+      timeout: 3s
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 4
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+
+# Gateway Configuration
+gateway:
+  llm:
+    providers:
+      claude:
+        base-url: https://api.anthropic.com
+        api-version: "2024-01-01"
+        default-model: claude-sonnet-4-20250514
+        timeout: 60s
+        max-retries: 3
+      openai:
+        base-url: https://api.openai.com
+        default-model: gpt-4o
+        timeout: 60s
+        max-retries: 3
+      gemini:
+        base-url: https://generativelanguage.googleapis.com
+        default-model: gemini-2.0-flash
+        timeout: 60s
+        max-retries: 3
+  rate-limit:
+    default-rpm: 60
+    default-tpm: 100000
+    sliding-window-size-seconds: 60
+  cache:
+    exact-match-ttl: 3600
+    semantic-ttl: 86400
+    max-entries: 10000
+  alert:
+    slack:
+      webhook-url: ${SLACK_WEBHOOK_URL:}
+      enabled: false
+
+logging:
+  level:
+    com.gateway: DEBUG
+    org.springframework.data.mongodb: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
