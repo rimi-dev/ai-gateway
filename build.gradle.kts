@@ -29,7 +29,7 @@ kotlin {
 
 val kotlinCoroutinesVersion = "1.10.1"
 val resilience4jVersion = "2.3.0"
-val testcontainersVersion = "2.0.0"
+val testcontainersVersion = "1.20.4"
 val wiremockVersion = "4.0.8"
 val mockkVersion = "1.14.0"
 
@@ -77,5 +77,9 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
-    jvmArgs("-XX:+EnableDynamicAgentLoading")
+    jvmArgs(
+        "-XX:+EnableDynamicAgentLoading",
+        "--add-opens", "java.base/java.lang=ALL-UNNAMED",
+        "--add-opens", "java.base/java.util=ALL-UNNAMED",
+    )
 }
