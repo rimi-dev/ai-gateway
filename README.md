@@ -49,44 +49,78 @@ Client → AuthFilter → RateLimitFilter → ProxyController
 
 - Java 21+
 - Docker & Docker Compose
+- Make (optional, 편의 명령어 제공)
 
-### Run Infrastructure
-
-```bash
-cd docker
-docker compose up -d
-```
-
-MongoDB (27017), Redis (6379), Mongo Express (8081)이 시작됩니다.
-
-### Run Application
+### Quick Start
 
 ```bash
 # 환경변수 설정
 export ANTHROPIC_API_KEY=your-key-here
 export OPENAI_API_KEY=your-key-here
 
-# 실행
-./gradlew bootRun
+# 인프라 + 애플리케이션 한번에 실행
+make run
 ```
 
 Application: http://localhost:8080
 
-### Build
+### Makefile Commands
+
+`make help`로 전체 명령어를 확인할 수 있습니다.
+
+| 명령어 | 설명 |
+|--------|------|
+| `make run` | 인프라 + 애플리케이션 실행 (한번에) |
+| `make dev` | 애플리케이션만 실행 (인프라가 이미 떠있을 때) |
+| `make stop` | 인프라 중지 |
+| `make infra` | MongoDB + Redis + Mongo Express 시작 |
+| `make infra-down` | 인프라 중지 |
+| `make infra-logs` | 인프라 로그 확인 |
+| `make monitoring` | Prometheus + Grafana 시작 (인프라 포함) |
+| `make monitoring-down` | 모니터링 포함 전체 중지 |
+| `make build` | 프로젝트 빌드 (테스트 포함) |
+| `make compile` | 컴파일만 (빠른 확인) |
+| `make test` | 테스트 실행 |
+| `make clean` | 빌드 캐시 정리 |
+| `make docker-build` | Docker 이미지 빌드 |
+| `make docker-run` | Docker 컨테이너 실행 |
+| `make db-shell` | MongoDB 쉘 접속 |
+| `make redis-cli` | Redis CLI 접속 |
+| `make logs` | Docker Compose 로그 확인 |
+
+### 인프라 서비스
+
+`make infra` 실행 시 아래 서비스가 시작됩니다:
+
+| 서비스 | URL |
+|--------|-----|
+| MongoDB | `localhost:27017` |
+| Redis | `localhost:6379` |
+| Mongo Express | http://localhost:8081 |
+
+`make monitoring` 추가 실행 시:
+
+| 서비스 | URL |
+|--------|-----|
+| Prometheus | http://localhost:9090 |
+| Grafana | http://localhost:3001 (admin/admin) |
+
+### Makefile 없이 실행
 
 ```bash
+# 인프라 시작
+docker compose -f docker/docker-compose.yml up -d mongodb redis mongo-express
+
+# 애플리케이션 실행
+./gradlew bootRun --args='--spring.profiles.active=local'
+
+# 빌드
 ./gradlew build
-```
 
-### Test
-
-```bash
+# 테스트
 ./gradlew test
-```
 
-### Docker Build
-
-```bash
+# Docker 빌드
 docker build -f docker/Dockerfile -t ai-gateway .
 ```
 
